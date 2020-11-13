@@ -1,0 +1,66 @@
+#!/bin/node
+
+const fs = require('fs');
+const vm = require('vm');
+const yaml = require('js-yaml');
+
+const {
+    HOLOLENS_K8S_PATCH_SCRIPT
+} = process.env;
+
+
+
+patchManifests(process.argv[2]);
+
+
+async function patchManifests(yamlPath) {
+
+    // read options
+    if (!yamlPath) {
+        throw new Error('yaml-path required');
+    }
+
+    const yamlDumpOptions = {};
+
+    const script = vm.runInNewContext(HOLOLENS_K8S_PATCH_SCRIPT);
+
+
+    // load objects
+    const objects = yaml.safeLoadAll(fs.readFileSync(yamlPath));
+
+
+    // patch namespaces
+    console.error(`patching objects in ${yamlPath}`);
+
+    for (const object of objects) {
+        // null values indicate empty documents
+        if (!object) {
+            continue;
+        }
+
+        if (!object.metadata) {
+            throw new Error('encountered object with no metadata');
+        }
+
+        const { kind, metadata: { name, namespace } } = object;
+
+        if (!name) {
+            throw new Error('encountered object with no name');
+        }
+
+        // apply script
+        console.error(`patching object ${namespace||'_'}/${kind}/${name}`);
+        script(object)
+    }
+
+
+    // save changes
+    fs.writeFileSync(
+        yamlPath,
+        objects
+            .map(
+                object => yaml.safeDump(object, yamlDumpOptions)
+            )
+            .join('\n---\n\n')
+    );
+}
