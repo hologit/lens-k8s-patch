@@ -7,7 +7,7 @@ pkg_license=("MIT")
 pkg_deps=(
   core/bash
   core/findutils
-  core/node
+  jarvus/node14
   jarvus/hologit
 )
 
@@ -24,7 +24,7 @@ do_build() {
     build_line "Preparing bin scripts"
     mkdir -v "bin"
     cp -v "${PLAN_CONTEXT}/bin"/* "./bin/"
-    fix_interpreter "bin/*" core/node bin/node
+    fix_interpreter "bin/*" jarvus/node14 bin/node
     fix_interpreter "bin/*" core/bash bin/bash
 
     build_line "Running: npm install"
