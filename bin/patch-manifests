@@ -44,6 +44,11 @@ async function patchManifests(yamlPath) {
             continue;
         }
 
+        if (object.kind == 'ConfigMapList') {
+            objects.push(...object.items);
+            continue;
+        }
+
         if (!object.metadata) {
             throw new Error('encountered object with no metadata');
         }
