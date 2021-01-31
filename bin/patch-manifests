@@ -9,8 +9,14 @@ const {
 } = process.env;
 
 
-
-patchManifests(process.argv[2]);
+(async () => {
+    try {
+        await patchManifests(process.argv[2]);
+    } catch (err) {
+        console.error(`failed to patch manifests: ${err}`);
+        process.exit(1);
+    }
+})();
 
 
 async function patchManifests(yamlPath) {
